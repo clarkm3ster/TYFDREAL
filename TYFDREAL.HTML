@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You For Drinking! - The 14-Day Program</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+    <style>
+        /* Final Product Polish CSS */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f8fc;
+            color: #1a202c;
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        :root {
+            --brand-primary: #A61C1C; --brand-primary-hover: #8F1717; --brand-secondary: #0B3D91;
+            --brand-secondary-hover: #083173; --brand-accent: #F0A100; --brand-accent-hover: #D99000;
+            --brand-success: #276749; --brand-info: #2C5282; --brand-light-bg: #FFFFFF;
+            --brand-subtle-bg: #EDF2F7; --brand-text-primary: #1a202c; --brand-text-secondary: #4a5568;
+            --brand-border: #cbd5e0; --brand-focus-ring: rgba(240, 161, 0, 0.55);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0,0,0,0.04);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0,0,0,0.04);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0,0,0,0.03);
+        }
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #a0aec0; border-radius: 10px; border: 2px solid #e2e8f0; }
+        ::-webkit-scrollbar-thumb:hover { background: #718096; }
+        .fade-in-up { opacity: 0; transform: translateY(25px); animation: fadeInUpAnimation 0.7s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards; }
+        @keyframes fadeInUpAnimation { to { opacity: 1; transform: translateY(0); } }
+        .fade-in { opacity: 0; animation: fadeInAnimation 0.8s ease-out forwards; }
+        @keyframes fadeInAnimation { to { opacity: 1; } }
+        .lesson-content-item { opacity: 0; transform: translateY(20px); animation: fadeInItem 0.55s cubic-bezier(0.215, 0.610, 0.355, 1.000) 0.2s forwards; }
+        @keyframes fadeInItem { to { opacity: 1; transform: translateY(0); } }
+        .lesson-content ul li, .lesson-content p { animation-delay: calc(0.1s * var(--stagger-index)); }
+        #notificationToast { position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%) translateY(35px) scale(0.95); padding: 18px 36px; border-radius: 14px; font-size: 1.1rem; font-weight: 600; z-index: 10001; transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; pointer-events: none; box-shadow: var(--shadow-xl); }
+        #notificationToast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); pointer-events: auto; }
+        #notificationToast.success { background-color: var(--brand-success); color: white; }
+        #notificationToast.error { background-color: #C53030; color: white; }
+        #notificationToast.info { background-color: var(--brand-info); color: white; }
+        #pageLoader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(247, 248, 252, 0.8); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 10001; transition: opacity 0.3s ease-out; }
+        .loader { border: 5px solid #d1d5db; border-top: 5px solid var(--brand-accent); border-radius: 50%; width: 44px; height: 44px; animation: spin 0.65s linear infinite; margin: 30px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .ai-generated-content { background-color: #EBF4FF; border-left: 7px solid var(--brand-info); padding: 28px; margin-top: 28px; border-radius: 14px; font-size: 1.05rem; color: #1A365D; box-shadow: var(--shadow-lg); line-height: 1.75; }
+        .ai-generated-content .ai-title { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--brand-secondary); margin-bottom: 18px; display: flex; align-items: center; font-size: 1.35em; }
+        .ai-generated-content .ai-title svg { margin-right: 14px; color: var(--brand-info); width: 26px; height: 26px; }
+        .btn { padding: 0.9375rem 2rem; border-radius: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-md); display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; border: 2px solid transparent; cursor: pointer; line-height: 1.5; }
+        .btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: var(--shadow-lg); }
+        .btn:active { transform: translateY(-1px) scale(1); box-shadow: var(--shadow-sm); }
+        .btn:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--brand-focus-ring), var(--shadow-lg); }
+        .btn-primary { background-color: var(--brand-primary); color: white; border-color: var(--brand-primary); }
+        .btn-secondary { background-color: var(--brand-secondary); color: white; border-color: var(--brand-secondary); }
+        .btn-accent { background-color: var(--brand-accent); color: var(--brand-text-primary); border-color: var(--brand-accent); }
+        .btn-success { background-color: var(--brand-success); color: white; border-color: var(--brand-success); }
+        .btn-info { background-color: var(--brand-info); color: white; border-color: var(--brand-info); }
+        .day-button { padding: 0.875rem 1.5rem; border-radius: 0.75rem; font-weight: 700; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); border: 3px solid transparent; box-shadow: var(--shadow-sm); }
+        .day-button:hover:not(:disabled) { transform: translateY(-3px) scale(1.03); box-shadow: var(--shadow-md); }
+        .day-button:disabled { background-color: #e2e8f0; color: #a0aec0; border-color: #cbd5e0; cursor:not-allowed; opacity: 0.7; box-shadow: none; }
+        .day-button.completed { background-color: var(--brand-secondary); color: white; border-color: var(--brand-secondary); }
+        .day-button.current { background-color: var(--brand-accent); color: var(--brand-text-primary); border-color: var(--brand-accent); transform: scale(1.08); box-shadow: 0 0 0 4px var(--brand-focus-ring), var(--shadow-lg); animation: pulse-glow 2.5s infinite ease-in-out; }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 4px var(--brand-focus-ring), var(--shadow-lg); } 50% { box-shadow: 0 0 0 8px rgba(240, 161, 0, 0.25), var(--shadow-lg); } }
+        .custom-input, .custom-textarea { border-width: 3px; border-color: var(--brand-border); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 0.75rem; padding: 1rem 1.25rem; font-size: 1.05rem; color: var(--brand-text-primary); background-color: var(--brand-light-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.03) inset; }
+        .custom-input:focus, .custom-textarea:focus { border-color: var(--brand-accent); box-shadow: 0 0 0 4px var(--brand-focus-ring), 0 2px 4px rgba(0,0,0,0.03) inset; background-color: #fff; outline: none; }
+        .custom-textarea { min-height: 200px; line-height: 1.65; }
+        .card { background-color: var(--brand-light-bg); border-radius: 1rem; box-shadow: var(--shadow-lg); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+        .card:hover { transform: translateY(-6px) scale(1.01); box-shadow: var(--shadow-xl); }
+        .card-title { font-family: 'Playfair Display', serif; color: var(--brand-primary); font-weight: 700; letter-spacing: -0.015em; }
+        .lesson-container .card-title { border-bottom: 4px solid var(--brand-accent); padding-bottom: 1rem; margin-bottom: 2rem; }
+        #authModal .modal-content-inner { transform: scale(0.9) translateY(30px); opacity: 0; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.35s ease-out; }
+        #authModal.open .modal-content-inner { transform: scale(1) translateY(0); opacity: 1; }
+        #authModal { backdrop-filter: blur(6px) saturate(150%); }
+        .main-container { max-width: 1100px; }
+        #landing .hero-title-main { font-size: clamp(2.8rem, 7vw, 5rem); }
+        #landing .hero-subtitle-main { font-size: clamp(1.25rem, 3vw, 1.75rem); max-width: 750px; }
+        #landing .cta-main { font-size: clamp(1.1rem, 2.5vw, 1.35rem); padding: 1.125rem 2.5rem; }
+        .juice-card-item { position: relative; border-left-width: 8px; border-color: transparent; }
+        .juice-card-item .juice-icon { position: absolute; top: 1.5rem; right: 1.5rem; width: 2.5rem; height: 2.5rem; color: var(--brand-primary); opacity: 0.1; transition: all 0.3s ease-out; }
+        .juice-card-item:hover { border-left-color: var(--brand-accent); }
+        .juice-card-item:hover .juice-icon { opacity: 0.2; transform: scale(1.1); }
+        #progressFill { position: relative; overflow: hidden; }
+        #progressFill::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 100%); transform: translateX(-100%); animation: progress-sheen 2s infinite linear; }
+        @keyframes progress-sheen { 100% { transform: translateX(100%); } }
+        .mwa-item { transition: all 0.2s ease-out; }
+        .mwa-item .mwa-complete-btn { opacity: 0; transform: scale(0.8); transition: all 0.2s ease-out; }
+        .mwa-item:hover .mwa-complete-btn { opacity: 1; transform: scale(1); }
+        .mwa-item .mwa-text { transition: all 0.2s ease-out; }
+        .mwa-item:hover .mwa-text { transform: translateX(5px); }
+        .header-noise { position: relative; }
+        .header-noise::before { content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"%3E%3Cg fill="none" stroke="%23FFFFFF" stroke-width="1"%3E%3Cpath d="M-500 75c0 0 125-30 250-30S0 75 0 75s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 125c0 0 125-30 250-30S0 125 0 125s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 175c0 0 125-30 250-30S0 175 0 175s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 225c0 0 125-30 250-30S0 225 0 225s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 275c0 0 125-30 250-30S0 275 0 275s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 325c0 0 125-30 250-30S0 325 0 325s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 375c0 0 125-30 250-30S0 375 0 375s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 425c0 0 125-30 250-30S0 425 0 425s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 475c0 0 125-30 250-30S0 475 0 475s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 525c0 0 125-30 250-30S0 525 0 525s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 575c0 0 125-30 250-30S0 575 0 575s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 625c0 0 125-30 250-30S0 625 0 625s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 675c0 0 125-30 250-30S0 675 0 675s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 725c0 0 125-30 250-30S0 725 0 725s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3Cpath d="M-500 775c0 0 125-30 250-30S0 775 0 775s125 30 250 30s250-30 250-30s125-30 250-30s250 30 250 30s125 30 250 30s250-30 250-30"/%3E%3C/g%3E%3C/svg%3E');
+            opacity: 0.03; z-index: -1;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: { extend: { /* Config remains unchanged */ } },
+        }
+    </script>
+</head>
+<body>
+
+    <div id="pageLoader"><div class="loader"></div></div>
+
+    <header class="bg-gradient-to-r from-red-800 via-brand-primary to-red-900 shadow-xl sticky top-0 z-50 header-noise">
+        <div class="main-container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-7 flex flex-col sm:flex-row justify-between items-center">
+            <div class="text-center sm:text-left">
+                <h1 class="text-3xl md:text-4xl font-playfair font-extrabold text-white tracking-tighter">Thank You For Drinking!</h1>
+                <p class="text-md md:text-lg text-yellow-100 italic mt-1.5 font-medium">The 14-Day Program to Reclaim Your Life</p>
+            </div>
+            <button id="signOutBtn" class="btn hidden mt-4 sm:mt-0" style="background-color: var(--brand-accent); border-color: var(--brand-accent); color: var(--brand-text-primary);">Sign Out</button>
+        </div>
+    </header>
+
+    <main class="main-container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <div id="landing" class="text-center hidden">
+            <h2 class="hero-title-main font-playfair font-extrabold text-brand-primary mb-6 md:mb-8 leading-tight tracking-tighter fade-in-up" style="animation-delay: 0.1s;">
+                You Are Drinking <span class="text-brand-secondary">Fat</span> Juice.<br>
+                <span class="text-brand-secondary">Broke</span> Juice.<br>
+                <span class="text-brand-secondary">Anxiety</span> Juice.
+            </h2>
+            <p class="hero-subtitle-main text-brand-text-secondary mb-12 md:mb-16 italic leading-relaxed mx-auto fade-in-up" style="animation-delay: 0.2s;">
+                This is the only alcohol program that <strong class="text-brand-primary font-semibold">requires drinking</strong> to fundamentally change your relationship with it.
+            </p>
+            <div class="fade-in-up" style="animation-delay: 0.3s;">
+                <button id="startProgramCta" class="btn btn-primary cta-main">Create Account to Begin</button>
+            </div>
+            <div id="juiceCardsContainer" class="mt-20 md:mt-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 text-left">
+                <!-- Juice Cards will be dynamically inserted here -->
+            </div>
+             <div class="mt-20 md:mt-24 p-10 bg-amber-50 border-l-[12px] border-brand-accent rounded-r-2xl shadow-lg fade-in-up">
+                <p class="text-2xl md:text-2xl font-semibold text-brand-text-primary mb-4"><strong>Week 1:</strong> Uncover the unvarnished truth about what you're really consuming.</p>
+                <p class="text-2xl md:text-2xl font-semibold text-brand-text-primary"><strong>Week 2:</strong> Experience drinking with the Truth Pill (Naltrexone) and witness your brain rewire.</p>
+                <p class="mt-8 text-xl md:text-xl italic text-brand-text-secondary">Grounded in proven neuroscience with a <strong class="text-brand-primary font-semibold">78% success rate</strong>.</p>
+            </div>
+        </div>
+
+        <div id="dashboard" class="hidden fade-in">
+             <div class="mb-12 p-8 bg-brand-light-bg rounded-2xl shadow-lg">
+                <div class="flex justify-between items-center mb-3">
+                    <span id="progressText" class="text-xl font-semibold text-brand-primary">Day 0 of 14</span>
+                    <span id="progressPercentage" class="text-lg font-bold text-brand-accent">0% Complete</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-7 overflow-hidden shadow-inner">
+                    <div id="progressFill" class="bg-gradient-to-r from-amber-400 via-brand-accent to-amber-600 h-full rounded-full transition-all duration-700 ease-out flex items-center justify-center text-sm font-bold text-white" style="width: 0%;">
+                    </div>
+                </div>
+            </div>
+            <div id="dayNavigation" class="flex flex-wrap gap-4 mb-12 justify-center"></div>
+            <div id="lessonContainer" class="card p-8 sm:p-10 md:p-12 mb-12"></div>
+            <div class="bg-brand-subtle-bg p-8 sm:p-10 md:p-12 rounded-2xl shadow-lg mb-12">
+                <h3 class="text-3xl md:text-4xl font-playfair font-bold text-brand-secondary mb-6">Today's Journal</h3>
+                <p id="journalPrompt" class="italic text-brand-text-secondary mb-6 text-xl">Reflect on today's lesson...</p>
+                <textarea id="journalEntry" class="custom-textarea w-full" placeholder="Write your thoughts, feelings, and observations here..."></textarea>
+                <div class="mt-8 flex flex-col sm:flex-row sm:items-center gap-5">
+                    <button id="saveJournalBtn" class="btn btn-secondary text-lg flex-grow sm:flex-grow-0">Save Journal</button>
+                    <button id="getAIReflectionBtn" class="btn btn-info text-lg flex-grow sm:flex-grow-0">AI Reflection</button>
+                </div>
+                <div id="aiReflectionLoader" class="loader hidden"></div>
+                <div id="aiReflectionOutput" class="ai-generated-content hidden"></div>
+            </div>
+            <div class="card p-8 sm:p-10 md:p-12">
+                <h3 class="text-3xl md:text-4xl font-playfair font-bold text-brand-secondary mb-4">Your Most Wonderful Alternatives (MWAs)</h3>
+                <p class="text-brand-text-secondary mb-8 text-xl">What truly excites you more than drinking? Let's build that life.</p>
+                <div class="flex flex-col sm:flex-row sm:items-center gap-5 mb-6">
+                    <input type="text" id="mwaInput" class="custom-input flex-grow text-lg" placeholder="e.g., Learn guitar, hike, start painting">
+                    <button id="addMwaBtn" class="btn btn-accent text-lg">Add MWA</button>
+                </div>
+                 <button id="brainstormMWAsBtn" class="btn btn-info w-full sm:w-auto mb-8 text-lg">Brainstorm with AI</button>
+                <div id="mwaBrainstormLoader" class="loader hidden"></div>
+                <div id="mwaBrainstormOutput" class="ai-generated-content hidden mb-8"></div>
+                <ul id="mwaList" class="space-y-4"></ul>
+            </div>
+        </div>
+    </main>
+
+    <div id="authModal" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center p-4 z-[1000] hidden opacity-0 transition-opacity duration-300">
+        <div class="modal-content-inner bg-brand-light-bg p-10 md:p-12 rounded-2xl shadow-2xl w-full max-w-md text-center relative">
+            <button id="closeModalBtn" class="absolute top-5 right-6 text-gray-400 hover:text-gray-600 text-4xl transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 rounded-full p-1" aria-label="Close modal">&times;</button>
+            <h2 id="authModalTitle" class="text-4xl md:text-4xl font-playfair font-bold text-brand-primary mb-6">Start Your Journey</h2>
+            <p id="authModalSubtitle" class="text-brand-text-secondary text-xl mb-8">Create an account to begin the 14-day program.</p>
+            <div class="space-y-4 text-left">
+                 <input type="email" id="emailInput" class="custom-input w-full" placeholder="Enter your email">
+                 <input type="password" id="passwordInput" class="custom-input w-full" placeholder="Enter a password (min. 6 characters)">
+            </div>
+            <p id="authError" class="text-red-600 text-sm mt-4 h-5"></p>
+            <button id="authSubmitBtn" class="btn btn-primary w-full text-xl py-4 mt-6">Create Account & Begin</button>
+            <p id="authToggleText" class="mt-6 text-md text-gray-500">Already have an account? <button id="authToggleBtn" class="text-brand-info font-semibold hover:underline">Log In</button></p>
+        </div>
+    </div>
+    
+    <div id="notificationToast" style="display: none;"><span></span></div>
+
+    <script type="module">
+        // Using localStorage for Preview Mode
+        const useFirebase = false; // Set to true to switch to Firebase mode
+
+        // --- Firebase SDK Imports (kept for easy switching) ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- App State and Variables ---
+        let appState = {};
+        let domElements = {};
+        let currentUser = null;
+        let isLoginMode = false;
+        
+        // --- Core Content ---
+        const lessons = [
+            { day: 1, title: "Welcome to the Movement", content: `Welcome to the course that changes how you drink — not by forcing you to stop, but by giving you something better.\n\nThree things to know:\n1. You will drink.\n   Not in Week 1 — but in Week 2, drinking becomes part of the protocol.\n2. You will acquire and use a Truth Pill.\n   That pill is called naltrexone — a safe, FDA-approved medication that changes how your brain responds to alcohol.\n3. You will dream better dreams.\n   Over the next 14 days, you'll build your list of MWAs: your Most Wonderful Alternatives — the life you'd rather be living than drinking.\n\nThis is not about abstinence. It's about alignment.\nNot about shame. But truth.\nYou are not the problem.\nBut alcohol might be.\n\nToday's assignment:\n- Schedule an appointment to get naltrexone\n- Start thinking about your MWAs\n- Commit to showing up for 14 days`, prompt: "What brought you here? What do you hope will be different in 14 days?" },
+            { day: 2, title: "Fat Juice", content: `You are drinking Fat Juice.\n\nAlcohol is liquid calories — packed with sugar, stripped of nutrients. But more than that, it hijacks your metabolism.\n\nWhen alcohol enters your body, your liver works urgently to process it as a toxin — converting it to acetate, which gets stored as fat, particularly around your midsection and liver.\nAnd because your liver is busy clearing alcohol, it ignores carbs, protein, and actual food — turning them into stored fat as well.\n\nThe facts:\n- Alcohol = 7 calories per gram (nearly as dense as fat)\n- Inhibits mTOR pathway (needed for muscle recovery)\n- Raises cortisol and insulin (fat-storing hormones)\n\nYou are drinking Fat Juice. Alcohol is making you fat.\n\nToday's assignment:\n- Calculate your weekly alcohol calories\n- Notice where you feel alcohol's physical effects\n- Add physical MWAs to your list`, prompt: "How has alcohol affected your physical health and appearance?" },
+            { day: 3, title: "Broke Juice", content: `You are drinking Broke Juice.\n\nLet's do the math:\n- 3 nights out per week × $50 = $150/week\n- 4 weeks = $600/month\n- 1 year = $7,200/year\n\nNow add:\n- Impulse purchases while drinking\n- Late-night food orders\n- Lost productivity\n- Health costs\n\nAlcohol doesn't just cost money. It costs opportunity.\nWhat could you build with that time and money?\n- A business\n- Travel experiences\n- Financial security\n- Your dreams\n\nYou are drinking Broke Juice. Alcohol is making you broke.\n\nToday's assignment:\n- Add up last month's alcohol spending\n- Calculate the opportunity cost\n- Add financial MWAs to your list`, prompt: "What dreams has alcohol spending prevented you from pursuing?" },
+            { day: 4, title: "Anxiety Juice", content: `You are drinking Anxiety Juice.\n\nAlcohol is the most socially acceptable anti-anxiety drug — and the most deceptive one.\n\nWhen you drink, alcohol floods your brain with GABA, making you feel calm. But when it wears off:\n- GABA production drops\n- Glutamate surges\n- Anxiety rebounds worse than before\n\nThe cycle:\nDrink → Feel calm → Wear off → More anxious → Drink again\n\nYou're not treating anxiety. You're guaranteeing it.\n\nThe science:\n- Alcohol disrupts sleep architecture\n- Causes 3am cortisol spikes\n- Creates withdrawal anxiety\n- Worsens baseline anxiety over time\n\nYou are drinking Anxiety Juice. Alcohol is giving you anxiety.\n\nToday's assignment:\n- Rate your baseline anxiety (1-10)\n- Notice anxiety patterns around drinking\n- Add calm-life MWAs to your list`, prompt: "How has alcohol affected your mental health and anxiety levels?" },
+            { day: 5, title: "Pain Juice", content: `You are drinking Pain Juice.\n\nAlcohol doesn't numb pain — it creates it:\n\nPhysical pain from:\n- Inflammation throughout your body\n- Dehydration causing headaches and cramps\n- Liver stress causing fatigue\n- Nerve damage from chronic use\n- Gut inflammation and digestive issues\n\nEvery drink triggers:\n- Cytokine release (inflammatory markers)\n- Histamine reactions\n- Oxidative stress\n- Cellular damage\n\nThat morning stiffness? That's not age. That's inflammation.\nThat digestive discomfort? That's not stress. That's damage.\n\nYou are drinking Pain Juice. Alcohol causes pain.\n\nToday's assignment:\n- Do a full body scan for pain/discomfort\n- Connect the dots to drinking\n- Add pain-free MWAs to your list`, prompt: "What physical pain have you been accepting as normal?" },
+            { day: 6, title: "Cancer Juice", content: `You are drinking Cancer Juice. Alcohol is a Group 1 carcinogen — the same category as asbestos and plutonium.\n\nAlcohol directly causes:\n- Oral and throat cancer\n- Esophageal cancer\n- Liver cancer\n- Breast cancer\n- Colorectal cancer\n- Stomach cancer\n- Pancreatic cancer\n\nHow it works:\n- Acetaldehyde damages DNA\n- Oxidative stress mutates cells\n- Hormonal changes feed tumors\n- Immune suppression allows growth\n\nThere is no safe level. Risk starts with the first drink.\n\nYou are drinking Cancer Juice. Alcohol is causing cancer in your body, now.\n\nToday's assignment:\n- Face the reality of what you're drinking\n- Consider your family cancer history\n- Add longevity MWAs to your list`, prompt: "How does knowing alcohol causes cancer change your perspective?" },
+            { day: 7, title: "Week 2 Preparation", content: `You made it through Week 1.\n\nYou've learned what you're really drinking:\n- Fat Juice\n- Broke Juice\n- Anxiety Juice\n- Pain Juice\n- Cancer Juice\n\nWeek 2 is where everything changes. You'll drink WITH the Truth Pill (naltrexone) and watch your brain rewire in real time.\n\nThe Truth Pill (Naltrexone):\n- Blocks opioid receptors\n- Prevents alcohol's reward\n- Enables "pharmacological extinction"\n- Proven 78% success rate using this approach\n\nCritical rules for Week 2:\n1. Take naltrexone 1 hour before drinking\n2. Never drink without it\n3. Drink mindfully, noticing the difference\n4. Focus on your MWAs\n\nToday's assignment:\n- Ensure you have naltrexone ready\n- Review and expand your MWA list\n- Prepare for transformation`, prompt: "What are you most excited about as you enter Week 2?" },
+            { day: 8, title: "MWAs - Most Wonderful Alternatives", content: `Take your Truth Pill. Wait one hour. Pour a drink. Read this while drinking.\n\nToday we flip the script. You're not giving anything up. You're choosing something better.\n\nYour MWAs (Most Wonderful Alternatives) aren't consolation prizes. They're your real life waiting to begin:\n\nPhysical MWAs:\n- Morning energy\n- Athletic achievements\n- Body confidence\n\nFinancial MWAs:\n- Debt freedom\n- Dream purchases\n- Business launches\n\nEmotional MWAs:\n- Peaceful mornings\n- Stable relationships\n- Self-trust\n\nCreative MWAs:\n- Art projects\n- Writing\n- Building\n- Learning\n\nNotice how your drink feels different with naltrexone? Flatter? Pointless?\nPerfect. Your brain is learning that your MWAs are more rewarding than alcohol.\n\nToday's assignment:\n- Drink with the Truth Pill\n- Expand your MWA list to 10 items\n- Notice which feels better: the drink or imagining your MWAs`, prompt: "What MWA excites you most? How does drinking feel different with naltrexone?" },
+            { day: 9, title: "Fat Juice (Rewired)", content: `Take your Truth Pill. Wait one hour. Pour a drink. Read this while drinking.\n\nYou know what you're drinking. Fat Juice. But tonight, something's different.\n\nThat warm glow? Missing.\nThat reward feeling? Blocked.\n\nThat's not failure. That's freedom beginning.\n\nRight now, naltrexone is blocking your opioid receptors. Alcohol is knocking, but nobody's answering.\n\nYou're still consuming:\n- Empty calories\n- Metabolic poison\n- Fat storage accelerator\n\nBut your brain isn't cheering anymore. You're drinking Fat Juice with full awareness and zero reward.\n\nCommon thoughts:\n"This feels pointless"\n"Why am I even drinking this?"\n"I'm bored"\n\nCongratulations. That's your addiction dying.\n\nToday's assignment:\n- Rate the pleasure (1-10)\n- Notice what's missing\n- Compare to your physical MWAs`, prompt: "How does Fat Juice feel without the reward? What physical MWA would you rather pursue?" },
+            { day: 10, title: "Broke Juice (Rewired)", content: `Take your Truth Pill. Wait one hour. Pour a drink. Open your banking app.\n\nYou're literally drinking money while your brain learns not to care.\n\nCalculate:\n- Cost of this drink: $___\n- Value received: $0\n- What else that money could buy: ___\n\nThanks to naltrexone, you can finally see the transaction clearly:\n- Money spent: Real\n- Damage done: Real\n- Reward received: Zero\n\nYou're buying nothing with something. And your brain is finally noticing.\n\nThat emptiness you feel? That's clarity.\nThat disappointment? That's your brain updating its files.\n\nToday's assignment:\n- Calculate tonight's waste\n- Feel the pointlessness\n- Imagine your financial MWAs instead`, prompt: "How does it feel to waste money on something that gives you nothing?" },
+            { day: 11, title: "Anxiety Juice (Rewired)", content: `Take your Truth Pill. Wait one hour. Pour a drink. Notice your anxiety level.\n\nYou're about to experience something profound: drinking anxiety's cause while feeling no relief.\n\nRight now, alcohol is failing to:\n- Calm your nerves (receptors blocked)\n- Quiet your mind (no GABA boost)\n- Provide escape (you're fully present)\n\nWhat IS happening:\n- Tomorrow's anxiety loading\n- Sleep disruption beginning\n- Inflammation starting\n\nYou're drinking tomorrow's anxiety with none of today's relief.\n\nThe paradox: You're anxious, you're drinking, it's not helping, and your brain is learning.\n\nToday's assignment:\n- Rate anxiety before and during drinking\n- Notice the lack of relief\n- Consider real anxiety solutions`, prompt: "How does it feel to drink Anxiety Juice without the false calm?" },
+            { day: 12, title: "Pain Juice (Rewired)", content: `Take your Truth Pill. Wait one hour. Pour a drink. Do a body scan.\n\nTonight, you drink Pain Juice without pain relief. Thanks to naltrexone, you'll feel alcohol's inflammatory effects without the false comfort.\n\nCheck in with your body:\n- Head tension?\n- Stomach discomfort?\n- Joint stiffness?\n- General inflammation?\n\nTake a sip. Notice: Nothing improves. Everything may worsen.\n\nYou're experiencing alcohol's true nature:\n- Pure inflammation\n- Zero relief\n- All damage\n- No reward\n\nYour body is teaching you: This isn't medicine, it's poison.\n\nToday's assignment:\n- Catalog every discomfort\n- Connect it to drinking\n- Imagine your pain-free MWAs`, prompt: "What is your body telling you about Pain Juice?" },
+            { day: 13, title: "Cancer Juice (Rewired)", content: `Take your Truth Pill. Wait one hour. Pour a drink. Look at it.\n\nYou're about to drink a known carcinogen while your brain learns there's nothing in it worth dying for.\n\nIn your hand:\n- Group 1 carcinogen\n- DNA damage in a glass\n- Cellular mutation catalyst\n- All risk, zero reward\n\nThanks to naltrexone:\n- No pleasure\n- No escape\n- No point\n- Just poison\n\nThe calculation is clear:\nRisk: Cancer\nReward: Nothing\n\nYour brain is learning what your cells always knew: This is poison without purpose.\n\nToday's assignment:\n- Say out loud: "This causes cancer"\n- Feel the emptiness\n- Choose life`, prompt: "How does it feel to drink Cancer Juice knowing there's no reward worth the risk?" },
+            { day: 14, title: "What's Next?", content: `Take your Truth Pill. Wait one hour. Pour what might be your last drink for a while. Or forever. The choice is actually yours now.\n\nYou did it.\n\nIn 14 days, you've:\n- Faced the truth about alcohol\n- Rewired your brain's reward system\n- Discovered your MWAs\n- Taken back control\n\nNotice how alcohol feels now: Boring? Pointless? Empty?\nThat's not failure. That's freedom.\n\nYour options:\n1. Continue with naltrexone whenever you drink\n2. Stop drinking (many lose interest entirely)\n3. Keep naltrexone as insurance\n\nThe ONE RULE: Never drink without naltrexone again.\n\nYour MWAs are waiting:\n- Book that trip\n- Start that project\n- Heal that relationship\n- Build that dream\n\nYou're not giving up drinking. You're graduating to everything better.\n\nThank you for your courage.\nThank you for drinking your way to freedom.\nWelcome to your real life.`, prompt: "How has your relationship with alcohol changed? What MWA will you pursue first?" }
+        ];
+
+        function initializeDomElements() {
+            domElements = {
+                pageLoader: document.getElementById('pageLoader'),
+                landingPage: document.getElementById('landing'),
+                dashboardPage: document.getElementById('dashboard'),
+                signOutBtn: document.getElementById('signOutBtn'),
+                startProgramCta: document.getElementById('startProgramCta'),
+                authModal: document.getElementById('authModal'),
+                closeModalBtn: document.getElementById('closeModalBtn'),
+                authModalTitle: document.getElementById('authModalTitle'),
+                authModalSubtitle: document.getElementById('authModalSubtitle'),
+                emailInput: document.getElementById('emailInput'),
+                passwordInput: document.getElementById('passwordInput'),
+                authError: document.getElementById('authError'),
+                authSubmitBtn: document.getElementById('authSubmitBtn'),
+                authToggleText: document.getElementById('authToggleText'),
+                progressText: document.getElementById('progressText'),
+                progressPercentage: document.getElementById('progressPercentage'),
+                progressFill: document.getElementById('progressFill'),
+                dayNavigationContainer: document.getElementById('dayNavigation'),
+                lessonContainer: document.getElementById('lessonContainer'),
+                journalPromptEl: document.getElementById('journalPrompt'),
+                journalEntryTextarea: document.getElementById('journalEntry'),
+                saveJournalBtn: document.getElementById('saveJournalBtn'),
+                getAIReflectionBtn: document.getElementById('getAIReflectionBtn'),
+                aiReflectionLoader: document.getElementById('aiReflectionLoader'),
+                aiReflectionOutput: document.getElementById('aiReflectionOutput'),
+                mwaInput: document.getElementById('mwaInput'),
+                addMwaBtn: document.getElementById('addMwaBtn'),
+                brainstormMWAsBtn: document.getElementById('brainstormMWAsBtn'),
+                mwaBrainstormLoader: document.getElementById('mwaBrainstormLoader'),
+                mwaBrainstormOutput: document.getElementById('mwaBrainstormOutput'),
+                mwaListContainer: document.getElementById('mwaList'),
+                notificationToast: document.getElementById('notificationToast'),
+                notificationMessage: document.querySelector('#notificationToast span'),
+                juiceCardsContainer: document.getElementById('juiceCardsContainer'),
+            };
+        }
+        
+        function showNotification(message, type = 'success', duration = 4000) {
+            if (!domElements.notificationMessage || !domElements.notificationToast) return;
+            domElements.notificationMessage.textContent = message;
+            domElements.notificationToast.style.display = 'block';
+            domElements.notificationToast.className = `show ${type}`;
+            setTimeout(() => {
+                 domElements.notificationToast.classList.remove('show');
+                 setTimeout(() => domElements.notificationToast.style.display = 'none', 300);
+            }, duration);
+        }
+
+        function showPage(page) {
+            if(!domElements.landingPage) return;
+            domElements.landingPage.classList.add('hidden');
+            domElements.dashboardPage.classList.add('hidden');
+            domElements.signOutBtn.classList.add('hidden');
+            if (page === 'landing') {
+                domElements.landingPage.classList.remove('hidden');
+                const cards = domElements.juiceCardsContainer.children;
+                 for (let i = 0; i < cards.length; i++) {
+                    cards[i].style.animationDelay = `${0.4 + i * 0.1}s`;
+                }
+            }
+            if (page === 'dashboard') {
+                domElements.dashboardPage.classList.remove('hidden');
+                domElements.signOutBtn.classList.remove('hidden');
+            }
+        }
+        
+        function updateProgressUI() {
+            if(!appState.currentDay || !lessons || !domElements.progressFill) return;
+            const totalDays = lessons.length;
+            const currentProgressDay = Math.max(0, appState.currentDay - 1);
+            const progressPercent = totalDays > 0 ? (currentProgressDay / totalDays) * 100 : 0;
+            domElements.progressFill.style.width = `${progressPercent}%`;
+            domElements.progressText.textContent = `Day ${appState.currentDay > 0 ? appState.currentDay : '0'} of ${totalDays}`;
+            domElements.progressPercentage.textContent = `${Math.round(progressPercent)}% Complete`;
+        }
+
+        function createDayNavigationUI() {
+            if(!domElements.dayNavigationContainer) return;
+            domElements.dayNavigationContainer.innerHTML = '';
+            lessons.forEach(lesson => {
+                const btn = document.createElement('button');
+                btn.className = 'day-button';
+                btn.textContent = `Day ${lesson.day}`;
+                if (lesson.day > appState.currentDay) {
+                    btn.disabled = true;
+                } else if (appState.completedDays.includes(lesson.day)) {
+                    btn.classList.add('completed');
+                } else if (lesson.day === appState.currentDay) {
+                    btn.classList.add('current');
+                } else {
+                    btn.classList.add('bg-white', 'text-brand-primary', 'border-brand-primary');
+                }
+                btn.onclick = () => {
+                    displayLesson(lesson.day);
+                    if(domElements.aiReflectionOutput) domElements.aiReflectionOutput.classList.add('hidden');
+                    if(domElements.mwaBrainstormOutput) domElements.mwaBrainstormOutput.classList.add('hidden');
+                }
+                domElements.dayNavigationContainer.appendChild(btn);
+            });
+        }
+
+        function formatLessonContent(content) {
+            let itemIndex = 0;
+            return content.split('\n\n').map(paragraphBlock => {
+                if (paragraphBlock.trim().startsWith('- ') || paragraphBlock.trim().startsWith('* ')) {
+                    const listItems = paragraphBlock.split('\n')
+                        .map(item => item.trim())
+                        .filter(item => item.startsWith('- ') || item.startsWith('* '))
+                        .map(item => `<li class="lesson-content-item ml-8" style="--stagger-index: ${itemIndex++}; list-style-type: disc; margin-left: 2rem; padding-left: 0.5rem;">${item.substring(2)}</li>`).join('');
+                    return `<ul class="lesson-content-item space-y-3 my-4" style="--stagger-index: ${itemIndex++}">${listItems}</ul>`;
+                }
+                return `<p class="lesson-content-item" style="--stagger-index: ${itemIndex++}">${paragraphBlock.replace(/\n/g, '<br>')}</p>`;
+            }).join('');
+        }
+        
+        function displayLesson(day) {
+            const lesson = lessons.find(l => l.day === day);
+            if(!lesson || !domElements.lessonContainer) return;
+            domElements.lessonContainer.innerHTML = `
+                <h2 class="card-title text-4xl md:text-4xl mb-8">${lesson.title}</h2>
+                <div class="lesson-content space-y-6 text-brand-text-secondary text-xl leading-relaxed whitespace-pre-wrap">
+                    ${formatLessonContent(lesson.content)}
+                </div>
+                <div class="mt-12 text-center sm:text-left">
+                ${!appState.completedDays.includes(day) && day === appState.currentDay ?
+                    `<button id="completeDayBtn" class="btn btn-success text-xl py-4 px-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        Mark Day ${day} Complete
+                    </button>` :
+                    appState.completedDays.includes(day) ?
+                    `<p class="text-2xl font-semibold text-brand-success flex items-center justify-center sm:justify-start"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Day ${day} Completed!</p>`
+                    : '<p class="text-gray-500 italic text-lg">Navigate to the current day to proceed with the program.</p>'
+                }
+                </div>`;
+            const completeDayBtn = document.getElementById('completeDayBtn');
+            if(completeDayBtn) completeDayBtn.onclick = () => handleCompleteDay(day);
+            domElements.journalPromptEl.textContent = lesson.prompt;
+            domElements.journalEntryTextarea.value = appState.journalEntries[day] || '';
+            domElements.journalEntryTextarea.setAttribute('data-day', day);
+        }
+
+        function displayMWAsUI() {
+            if(!domElements.mwaListContainer) return;
+            domElements.mwaListContainer.innerHTML = '';
+            (appState.mwas || []).forEach((mwa, index) => {
+                const li = document.createElement('li');
+                li.className = 'mwa-item flex justify-between items-center bg-amber-50 p-5 rounded-xl shadow-sm border-2 border-amber-200';
+                li.innerHTML = `
+                    <button class="mwa-complete-btn text-green-500 hover:text-green-700 p-2 rounded-full hover:bg-green-100 transition-colors mr-4" aria-label="Complete MWA">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    </button>
+                    <span class="mwa-text text-brand-text-primary text-lg flex-grow">${mwa}</span>
+                    <button data-index="${index}" class="remove-mwa-btn text-red-600 hover:text-red-800 font-bold p-2.5 rounded-full hover:bg-red-100 transition-colors flex-shrink-0" aria-label="Remove MWA">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>`;
+                domElements.mwaListContainer.appendChild(li);
+            });
+            document.querySelectorAll('.remove-mwa-btn').forEach(btn => btn.onclick = (e) => handleRemoveMWA(parseInt(e.currentTarget.dataset.index)));
+        }
+
+        function refreshDashboardUI() {
+            if (!appState || !domElements.progressFill) return;
+            updateProgressUI();
+            createDayNavigationUI();
+            if(appState.currentDay > 0) {
+                displayLesson(appState.currentDay);
+            } else {
+                 domElements.lessonContainer.innerHTML = `<div class="text-center py-10"><h2 class="text-4xl font-playfair font-bold text-brand-primary">Welcome to Your Dashboard!</h2><p class="mt-6 text-xl text-brand-text-secondary">Select Day 1 above to begin your transformative journey.</p></div>`;
+            }
+            displayMWAsUI();
+        }
+
+        // --- AUTH & DATA FUNCTIONS (Using localStorage for Preview) ---
+        
+        function loadState() {
+            const savedState = localStorage.getItem('tyfdProgramState_preview');
+            if (savedState) {
+                appState = JSON.parse(savedState);
+            } else {
+                // Default state for first-time preview
+                appState = { isLoggedIn: false, currentDay: 0, completedDays: [], journalEntries: {}, mwas: [] };
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('tyfdProgramState_preview', JSON.stringify(appState));
+        }
+
+        function handleAuthSubmit() { // Mock sign-up/login
+            appState.isLoggedIn = true;
+            appState.currentDay = appState.currentDay || 1; // Start on day 1 if not started
+            saveState();
+            closeAuthModal();
+            showPage('dashboard');
+            refreshDashboardUI();
+        }
+
+        function handleSignOut() {
+            appState = { isLoggedIn: false, currentDay: 0, completedDays: [], journalEntries: {}, mwas: [] };
+            localStorage.removeItem('tyfdProgramState_preview');
+            showPage('landing');
+        }
+
+        function toggleAuthMode(showLogin) {
+            isLoginMode = showLogin;
+            domElements.authError.textContent = '';
+            const authToggleBtnContainer = document.getElementById('authToggleText');
+            if (isLoginMode) {
+                domElements.authModalTitle.textContent = "Welcome Back";
+                domElements.authModalSubtitle.textContent = "Log in to continue your journey.";
+                domElements.authSubmitBtn.textContent = "Log In";
+                authToggleBtnContainer.innerHTML = `Don't have an account? <button id="authToggleBtn" class="text-brand-info font-semibold hover:underline">Sign Up</button>`;
+            } else {
+                domElements.authModalTitle.textContent = "Start Your Journey";
+                domElements.authModalSubtitle.textContent = "Create an account to begin the 14-day program.";
+                domElements.authSubmitBtn.textContent = "Create Account & Begin";
+                authToggleBtnContainer.innerHTML = `Already have an account? <button id="authToggleBtn" class="text-brand-info font-semibold hover:underline">Log In</button>`;
+            }
+        }
+
+        function showAuthModal(showLogin = false) {
+            toggleAuthMode(showLogin);
+            domElements.authModal.classList.remove('hidden');
+            setTimeout(() => domElements.authModal.classList.add('open'), 10);
+        }
+
+        function closeAuthModal() {
+            domElements.authModal.classList.add('opacity-0');
+            setTimeout(() => domElements.authModal.classList.add('hidden'), 400);
+        }
+        
+        // --- Other Handlers ---
+        
+        async function handleCompleteDay(day) {
+            if (!appState.completedDays.includes(day) && day === appState.currentDay) {
+                appState.completedDays.push(day);
+                if (appState.currentDay < lessons.length) appState.currentDay++;
+                saveState();
+                refreshDashboardUI();
+                showNotification(`Day ${day} completed!`, 'success');
+            }
+        }
+        async function handleSaveJournal() {
+            const entry = domElements.journalEntryTextarea.value;
+            const dayKey = domElements.journalEntryTextarea.getAttribute('data-day');
+            if (dayKey) {
+                if(!appState.journalEntries) appState.journalEntries = {};
+                appState.journalEntries[dayKey] = entry;
+                saveState();
+                showNotification('Journal entry saved!', 'success');
+            }
+        }
+        async function handleAddMWA() {
+            const mwaText = domElements.mwaInput.value.trim();
+            if(mwaText){
+                if(!appState.mwas) appState.mwas = [];
+                appState.mwas.push(mwaText);
+                saveState();
+                displayMWAsUI();
+                domElements.mwaInput.value = '';
+            }
+        }
+        async function handleRemoveMWA(index) {
+            appState.mwas.splice(index, 1);
+            saveState();
+            displayMWAsUI();
+        }
+        
+        // --- Gemini API Call functions ---
+
+        async function callGeminiAPI(promptText) {
+            showNotification("Connecting to AI...", "info", 2000);
+            return new Promise(resolve => setTimeout(() => resolve(`This is a mock AI response for: "${promptText}"`), 1500));
+        }
+
+        async function handleBrainstormMWAs() {
+            const keywords = prompt("Enter interests for brainstorming (e.g., 'creative, outdoors'):");
+            if (!keywords) return;
+            domElements.mwaBrainstormLoader.classList.remove('hidden');
+            const prompt = `Suggest 5 'Most Wonderful Alternatives' to drinking based on these interests: ${keywords}. Format as a simple bullet list.`;
+            const result = await callGeminiAPI(prompt);
+            domElements.mwaBrainstormLoader.classList.add('hidden');
+            if(result) domElements.mwaBrainstormOutput.innerHTML = result.replace(/-/g, '<br>-');
+            domElements.mwaBrainstormOutput.classList.remove('hidden');
+        }
+
+        async function handleGetAIReflection() {
+            const entry = domElements.journalEntryTextarea.value;
+            if (!entry) { showNotification('Please write in your journal first.', 'info'); return; }
+            domElements.aiReflectionLoader.classList.remove('hidden');
+            const prompt = `Provide a brief, supportive reflection on this journal entry from someone quitting alcohol: "${entry}"`;
+            const result = await callGeminiAPI(prompt);
+            domElements.aiReflectionLoader.classList.add('hidden');
+            if(result) domElements.aiReflectionOutput.innerHTML = result;
+            domElements.aiReflectionOutput.classList.remove('hidden');
+        }
+
+        function init() {
+            initializeDomElements();
+            
+            // --- Initial UI setup ---
+            if (domElements.pageLoader) {
+                domElements.pageLoader.style.opacity = '0';
+                setTimeout(() => { domElements.pageLoader.style.display = 'none'; }, 300);
+            }
+            loadState();
+            if (appState.isLoggedIn) {
+                showPage('dashboard');
+                refreshDashboardUI();
+            } else {
+                showPage('landing');
+            }
+
+            // --- Event Listeners ---
+            domElements.startProgramCta.addEventListener('click', () => showAuthModal(false));
+            domElements.closeModalBtn.addEventListener('click', closeAuthModal);
+            domElements.authSubmitBtn.addEventListener('click', handleAuthSubmit);
+            domElements.signOutBtn.addEventListener('click', handleSignOut);
+            domElements.saveJournalBtn.addEventListener('click', handleSaveJournal);
+            domElements.addMwaBtn.addEventListener('click', handleAddMWA);
+            domElements.mwaInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleAddMWA(); });
+            domElements.brainstormMWAsBtn.addEventListener('click', handleBrainstormMWAs);
+            domElements.getAIReflectionBtn.addEventListener('click', handleGetAIReflection);
+            domElements.authModal.addEventListener('click', (e) => {
+                if(e.target && e.target.id === 'authToggleBtn') {
+                    toggleAuthMode(!isLoginMode);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
