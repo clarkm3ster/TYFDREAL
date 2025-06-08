@@ -202,28 +202,21 @@
     <div id="notificationToast" style="display: none;"><span></span></div>
 
     <script type="module">
+        // Using localStorage for Preview Mode
+        const useFirebase = false; // Set to true to switch to Firebase mode
+
+        // --- Firebase SDK Imports (kept for easy switching) ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCETwEwxoWwp9pVVtFhwvFjNk6AAapY_Rw",
-  authDomain: "tyfd-real.firebaseapp.com",
-  projectId: "tyfd-real",
-  storageBucket: "tyfd-real.firebasestorage.app",
-  messagingSenderId: "90002542690",
-  appId: "1:90002542690:web:693616719ac68c72ac413b",
-  measurementId: "G-WEXXMYRVJM"
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
+        // --- App State and Variables ---
         let appState = {};
         let domElements = {};
         let currentUser = null;
         let isLoginMode = false;
         
+        // --- Core Content ---
         const lessons = [
             { day: 1, title: "Welcome to the Movement", content: `Welcome to the course that changes how you drink — not by forcing you to stop, but by giving you something better.\n\nThree things to know:\n1. You will drink.\n   Not in Week 1 — but in Week 2, drinking becomes part of the protocol.\n2. You will acquire and use a Truth Pill.\n   That pill is called naltrexone — a safe, FDA-approved medication that changes how your brain responds to alcohol.\n3. You will dream better dreams.\n   Over the next 14 days, you'll build your list of MWAs: your Most Wonderful Alternatives — the life you'd rather be living than drinking.\n\nThis is not about abstinence. It's about alignment.\nNot about shame. But truth.\nYou are not the problem.\nBut alcohol might be.\n\nToday's assignment:\n- Schedule an appointment to get naltrexone\n- Start thinking about your MWAs\n- Commit to showing up for 14 days`, prompt: "What brought you here? What do you hope will be different in 14 days?" },
             { day: 2, title: "Fat Juice", content: `You are drinking Fat Juice.\n\nAlcohol is liquid calories — packed with sugar, stripped of nutrients. But more than that, it hijacks your metabolism.\n\nWhen alcohol enters your body, your liver works urgently to process it as a toxin — converting it to acetate, which gets stored as fat, particularly around your midsection and liver.\nAnd because your liver is busy clearing alcohol, it ignores carbs, protein, and actual food — turning them into stored fat as well.\n\nThe facts:\n- Alcohol = 7 calories per gram (nearly as dense as fat)\n- Inhibits mTOR pathway (needed for muscle recovery)\n- Raises cortisol and insulin (fat-storing hormones)\n\nYou are drinking Fat Juice. Alcohol is making you fat.\n\nToday's assignment:\n- Calculate your weekly alcohol calories\n- Notice where you feel alcohol's physical effects\n- Add physical MWAs to your list`, prompt: "How has alcohol affected your physical health and appearance?" },
@@ -240,6 +233,8 @@ const firebaseConfig = {
             { day: 13, title: "Cancer Juice (Rewired)", content: `Take your Truth Pill. Wait one hour. Pour a drink. Look at it.\n\nYou're about to drink a known carcinogen while your brain learns there's nothing in it worth dying for.\n\nIn your hand:\n- Group 1 carcinogen\n- DNA damage in a glass\n- Cellular mutation catalyst\n- All risk, zero reward\n\nThanks to naltrexone:\n- No pleasure\n- No escape\n- No point\n- Just poison\n\nThe calculation is clear:\nRisk: Cancer\nReward: Nothing\n\nYour brain is learning what your cells always knew: This is poison without purpose.\n\nToday's assignment:\n- Say out loud: "This causes cancer"\n- Feel the emptiness\n- Choose life`, prompt: "How does it feel to drink Cancer Juice knowing there's no reward worth the risk?" },
             { day: 14, title: "What's Next?", content: `Take your Truth Pill. Wait one hour. Pour what might be your last drink for a while. Or forever. The choice is actually yours now.\n\nYou did it.\n\nIn 14 days, you've:\n- Faced the truth about alcohol\n- Rewired your brain's reward system\n- Discovered your MWAs\n- Taken back control\n\nNotice how alcohol feels now: Boring? Pointless? Empty?\nThat's not failure. That's freedom.\n\nYour options:\n1. Continue with naltrexone whenever you drink\n2. Stop drinking (many lose interest entirely)\n3. Keep naltrexone as insurance\n\nThe ONE RULE: Never drink without naltrexone again.\n\nYour MWAs are waiting:\n- Book that trip\n- Start that project\n- Heal that relationship\n- Build that dream\n\nYou're not giving up drinking. You're graduating to everything better.\n\nThank you for your courage.\nThank you for drinking your way to freedom.\nWelcome to your real life.`, prompt: "How has your relationship with alcohol changed? What MWA will you pursue first?" }
         ];
+
+        // --- All Functions (UI, State, Logic, AI) ---
 
         function initializeDomElements() {
             domElements = {
@@ -411,51 +406,34 @@ const firebaseConfig = {
             displayMWAsUI();
         }
 
-        async function loadStateFromFirestore() {
-            if (!currentUser) return;
-            const userDocRef = doc(db, "users", currentUser.uid);
-            try {
-                const docSnap = await getDoc(userDocRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    appState = { ...appState, ...data, isLoggedIn: true, completedDays: data.completedDays || [], mwas: data.mwas || [], journalEntries: data.journalEntries || {} };
-                    await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
-                } else {
-                    const defaultState = {
-                        email: currentUser.email, createdAt: serverTimestamp(), lastLogin: serverTimestamp(),
-                        hasPaid: true, currentDay: 1, completedDays: [], journalEntries: {}, mwas: []
-                    };
-                    await setDoc(userDocRef, defaultState);
-                    appState = { ...appState, ...defaultState, isLoggedIn: true };
-                }
-            } catch (error) {
-                console.error("Error loading state:", error);
-                showNotification("Failed to load your progress.", "error");
+        function loadState() {
+            const savedState = localStorage.getItem('tyfdProgramState_preview');
+            if (savedState) {
+                appState = JSON.parse(savedState);
+            } else {
+                appState = { isLoggedIn: false, currentDay: 0, completedDays: [], journalEntries: {}, mwas: [] };
             }
         }
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                await loadStateFromFirestore();
-                if (appState.hasPaid) {
-                    showPage('dashboard');
-                    refreshDashboardUI();
-                } else {
-                    showPage('landing');
-                    showNotification("Payment required to access the program.", "info");
-                }
-            } else {
-                currentUser = null;
-                appState = { isLoggedIn: false };
-                showPage('landing');
-            }
-            if(domElements.pageLoader) {
-                domElements.pageLoader.style.opacity = '0';
-                setTimeout(() => { domElements.pageLoader.style.display = 'none'; }, 300);
-            }
-        });
-        
+        function saveState() {
+            localStorage.setItem('tyfdProgramState_preview', JSON.stringify(appState));
+        }
+
+        function handleAuthSubmit() { // Mock sign-up/login for preview
+            appState.isLoggedIn = true;
+            appState.currentDay = appState.currentDay || 1;
+            saveState();
+            closeAuthModal();
+            showPage('dashboard');
+            refreshDashboardUI();
+        }
+
+        function handleSignOut() {
+            appState = { isLoggedIn: false, currentDay: 0, completedDays: [], journalEntries: {}, mwas: [] };
+            localStorage.removeItem('tyfdProgramState_preview');
+            showPage('landing');
+        }
+
         function toggleAuthMode(showLogin) {
             isLoginMode = showLogin;
             domElements.authError.textContent = '';
@@ -484,46 +462,11 @@ const firebaseConfig = {
             setTimeout(() => domElements.authModal.classList.add('hidden'), 400);
         }
         
-        function handleAuthSubmit() {
-            const email = domElements.emailInput.value;
-            const password = domElements.passwordInput.value;
-            domElements.authError.textContent = "";
-
-            if (!email || password.length < 6) {
-                domElements.authError.textContent = "Please enter a valid email and a password of at least 6 characters.";
-                return;
-            }
-
-            const authPromise = isLoginMode
-                ? signInWithEmailAndPassword(auth, email, password)
-                : createUserWithEmailAndPassword(auth, email, password);
-            
-            authPromise.then(userCredential => {
-                closeAuthModal();
-            }).catch(error => {
-                domElements.authError.textContent = error.message;
-            });
-        }
-        
-        async function handleSignOut() {
-            await signOut(auth);
-        }
-        
-        async function saveStateToFirestore() {
-            if (!currentUser) return;
-            const userDocRef = doc(db, "users", currentUser.uid);
-            const dataToSave = {
-                currentDay: appState.currentDay, completedDays: appState.completedDays,
-                journalEntries: appState.journalEntries, mwas: appState.mwas,
-                hasPaid: appState.hasPaid
-            };
-            await setDoc(userDocRef, dataToSave, { merge: true });
-        }
         async function handleCompleteDay(day) {
             if (!appState.completedDays.includes(day) && day === appState.currentDay) {
                 appState.completedDays.push(day);
                 if (appState.currentDay < lessons.length) appState.currentDay++;
-                await saveStateToFirestore();
+                saveState();
                 refreshDashboardUI();
                 showNotification(`Day ${day} completed!`, 'success');
             }
@@ -534,7 +477,7 @@ const firebaseConfig = {
             if (dayKey) {
                 if(!appState.journalEntries) appState.journalEntries = {};
                 appState.journalEntries[dayKey] = entry;
-                await saveStateToFirestore();
+                saveState();
                 showNotification('Journal entry saved!', 'success');
             }
         }
@@ -543,14 +486,14 @@ const firebaseConfig = {
             if(mwaText){
                 if(!appState.mwas) appState.mwas = [];
                 appState.mwas.push(mwaText);
-                await saveStateToFirestore();
+                saveState();
                 displayMWAsUI();
                 domElements.mwaInput.value = '';
             }
         }
         async function handleRemoveMWA(index) {
             appState.mwas.splice(index, 1);
-            await saveStateToFirestore();
+            saveState();
             displayMWAsUI();
         }
 
@@ -627,6 +570,20 @@ const firebaseConfig = {
         function init() {
             initializeDomElements();
             createJuiceCards();
+            
+            // --- Preview Mode Setup ---
+            loadState(); // Use localStorage
+            if (appState.isLoggedIn) {
+                showPage('dashboard');
+                refreshDashboardUI();
+            } else {
+                showPage('landing');
+            }
+            // Hide loader after initial setup
+            if(domElements.pageLoader) {
+                domElements.pageLoader.style.opacity = '0';
+                setTimeout(() => { domElements.pageLoader.style.display = 'none'; }, 300);
+            }
             
             // --- Event Listeners ---
             domElements.startProgramCta.addEventListener('click', () => showAuthModal(false));
