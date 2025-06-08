@@ -202,22 +202,30 @@
     <div id="notificationToast" style="display: none;"><span></span></div>
 
     <script type="module">
-        const useFirebase = true; // Set to true to switch to Firebase mode
+        const useFirebase = true; // Set to true to enable Firebase
 
-        // --- Firebase SDK Imports (kept for easy switching) ---
+        // --- Firebase SDK Imports ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
-  apiKey: "AIzaSyCETwEwxoWwp9pVVtFhwvFjNk6AAapY_Rw",
-  authDomain: "tyfd-real.firebaseapp.com",
-  projectId: "tyfd-real",
-  storageBucket: "tyfd-real.firebasestorage.app",
-  messagingSenderId: "90002542690",
-  appId: "1:90002542690:web:693616719ac68c72ac413b",
-  measurementId: "G-WEXXMYRVJM"
-};
+            apiKey: "AIzaSyCETwEwxoWwp9pVVtFhwvFjNk6AAapY_Rw",
+            authDomain: "tyfd-real.firebaseapp.com",
+            projectId: "tyfd-real",
+            storageBucket: "tyfd-real.firebasestorage.app",
+            messagingSenderId: "90002542690",
+            appId: "1:90002542690:web:693616719ac68c72ac413b",
+            measurementId: "G-WEXXMYRVJM"
+        };
+
+        // Initialize Firebase
+        let app, auth, db;
+        if (useFirebase) {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        }
 
         // --- App State and Variables ---
         let appState = {};
@@ -413,32 +421,116 @@
             displayMWAsUI();
         }
 
-        function loadState() {
-            const savedState = localStorage.getItem('tyfdProgramState_preview');
-            if (savedState) {
-                appState = JSON.parse(savedState);
-            } else {
-                appState = { isLoggedIn: false, currentDay: 0, completedDays: [], journalEntries: {}, mwas: [] };
+        // Firebase-specific functions
+        async function loadUserData() {
+            if (!currentUser || !useFirebase) return;
+            try {
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    appState = {
+                        currentDay: userData.currentDay || 1,
+                        completedDays: userData.completedDays || [],
+                        journalEntries: userData.journalEntries || {},
+                        mwas: userData.mwas || [],
+                        isLoggedIn: true
+                    };
+                } else {
+                    // New user - create initial document
+                    appState = {
+                        currentDay: 1,
+                        completedDays: [],
+                        journalEntries: {},
+                        mwas: [],
+                        isLoggedIn: true
+                    };
+                    await setDoc(doc(db, 'users', currentUser.uid), {
+                        ...appState,
+                        createdAt: serverTimestamp(),
+                        email: currentUser.email
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showNotification('Error loading data. Please refresh.', 'error');
             }
         }
 
-        function saveState() {
-            localStorage.setItem('tyfdProgramState_preview', JSON.stringify(appState));
+        async function saveUserData() {
+            if (!currentUser || !useFirebase) return;
+            try {
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    currentDay: appState.currentDay,
+                    completedDays: appState.completedDays,
+                    journalEntries: appState.journalEntries,
+                    mwas: appState.mwas,
+                    lastUpdated: serverTimestamp()
+                });
+            } catch (error) {
+                console.error('Error saving user data:', error);
+                showNotification('Error saving data. Please try again.', 'error');
+            }
         }
 
-        function handleAuthSubmit() { // Mock sign-up/login for preview
-            appState.isLoggedIn = true;
-            appState.currentDay = appState.currentDay || 1;
-            saveState();
-            closeAuthModal();
-            showPage('dashboard');
-            refreshDashboardUI();
+        async function handleAuthSubmit() {
+            const email = domElements.emailInput.value.trim();
+            const password = domElements.passwordInput.value;
+            
+            if (!email || !password) {
+                domElements.authError.textContent = 'Please fill in all fields.';
+                return;
+            }
+            
+            if (password.length < 6) {
+                domElements.authError.textContent = 'Password must be at least 6 characters.';
+                return;
+            }
+            
+            domElements.authSubmitBtn.disabled = true;
+            domElements.authError.textContent = '';
+            
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                }
+                closeAuthModal();
+            } catch (error) {
+                console.error('Auth error:', error);
+                switch(error.code) {
+                    case 'auth/email-already-in-use':
+                        domElements.authError.textContent = 'This email is already registered. Please log in.';
+                        break;
+                    case 'auth/invalid-email':
+                        domElements.authError.textContent = 'Please enter a valid email address.';
+                        break;
+                    case 'auth/user-not-found':
+                        domElements.authError.textContent = 'No account found with this email.';
+                        break;
+                    case 'auth/wrong-password':
+                        domElements.authError.textContent = 'Incorrect password. Please try again.';
+                        break;
+                    case 'auth/invalid-credential':
+                        domElements.authError.textContent = 'Invalid email or password.';
+                        break;
+                    default:
+                        domElements.authError.textContent = 'An error occurred. Please try again.';
+                }
+            } finally {
+                domElements.authSubmitBtn.disabled = false;
+            }
         }
 
-        function handleSignOut() {
-            appState = { isLoggedIn: false, currentDay: 0, completedDays: [], journalEntries: {}, mwas: [] };
-            localStorage.removeItem('tyfdProgramState_preview');
-            showPage('landing');
+        async function handleSignOut() {
+            try {
+                await signOut(auth);
+                appState = {};
+                showNotification('Signed out successfully', 'success');
+            } catch (error) {
+                console.error('Sign out error:', error);
+                showNotification('Error signing out', 'error');
+            }
         }
 
         function toggleAuthMode(showLogin) {
@@ -465,54 +557,77 @@
         }
 
         function closeAuthModal() {
-            domElements.authModal.classList.add('opacity-0');
-            setTimeout(() => domElements.authModal.classList.add('hidden'), 400);
+            domElements.authModal.classList.remove('open');
+            setTimeout(() => {
+                domElements.authModal.classList.add('hidden');
+                domElements.authModal.classList.add('opacity-0');
+            }, 400);
         }
         
         async function handleCompleteDay(day) {
             if (!appState.completedDays.includes(day) && day === appState.currentDay) {
                 appState.completedDays.push(day);
                 if (appState.currentDay < lessons.length) appState.currentDay++;
-                saveState();
+                await saveUserData();
                 refreshDashboardUI();
                 showNotification(`Day ${day} completed!`, 'success');
             }
         }
+
         async function handleSaveJournal() {
             const entry = domElements.journalEntryTextarea.value;
             const dayKey = domElements.journalEntryTextarea.getAttribute('data-day');
             if (dayKey) {
                 if(!appState.journalEntries) appState.journalEntries = {};
                 appState.journalEntries[dayKey] = entry;
-                saveState();
+                await saveUserData();
                 showNotification('Journal entry saved!', 'success');
             }
         }
+
         async function handleAddMWA() {
             const mwaText = domElements.mwaInput.value.trim();
             if(mwaText){
                 if(!appState.mwas) appState.mwas = [];
                 appState.mwas.push(mwaText);
-                saveState();
+                await saveUserData();
                 displayMWAsUI();
                 domElements.mwaInput.value = '';
+                showNotification('MWA added!', 'success');
             }
         }
+
         async function handleRemoveMWA(index) {
             appState.mwas.splice(index, 1);
-            saveState();
+            await saveUserData();
             displayMWAsUI();
+            showNotification('MWA removed', 'info');
         }
 
         async function callGeminiAPI(promptText) {
             showNotification("Connecting to AI...", "info", 2000);
-            const API_KEY = ""; // Kept blank for Canvas environment
+            
+            // Get API key from environment variable (for Vercel deployment)
+            const API_KEY = process.env.GEMINI_API_KEY || '';
+            
+            if (!API_KEY) {
+                showNotification("AI features require API key configuration", "error");
+                return null;
+            }
+            
             const GENERATIVE_MODEL_TEXT = "gemini-2.0-flash";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GENERATIVE_MODEL_TEXT}:generateContent?key=${API_KEY}`;
             const payload = { contents: [{ role: "user", parts: [{ text: promptText }] }] };
+            
             try {
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const response = await fetch(apiUrl, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(payload) 
+                });
+                
                 if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+                
                 const result = await response.json();
                 if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
                     return result.candidates[0].content.parts[0].text;
@@ -527,10 +642,12 @@
         async function handleBrainstormMWAs() {
             const keywords = prompt("Enter interests for brainstorming (e.g., 'creative, outdoors'):");
             if (!keywords) return;
+            
             domElements.mwaBrainstormLoader.classList.remove('hidden');
-            const prompt = `Suggest 5 'Most Wonderful Alternatives' to drinking based on these interests: ${keywords}. Format as a simple bullet list.`;
-            const result = await callGeminiAPI(prompt);
+            const promptText = `Suggest 5 'Most Wonderful Alternatives' to drinking based on these interests: ${keywords}. Format as a simple bullet list.`;
+            const result = await callGeminiAPI(promptText);
             domElements.mwaBrainstormLoader.classList.add('hidden');
+            
             if(result) {
                 domElements.mwaBrainstormOutput.innerHTML = `<p class="ai-title"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> AI MWA Ideas</p><ul>` +
                 result.split('- ').filter(r => r.trim()).map(r => `<li>${r.trim()}</li>`).join('') + `</ul>`;
@@ -540,11 +657,16 @@
 
         async function handleGetAIReflection() {
             const entry = domElements.journalEntryTextarea.value;
-            if (!entry) { showNotification('Please write in your journal first.', 'info'); return; }
+            if (!entry) { 
+                showNotification('Please write in your journal first.', 'info'); 
+                return; 
+            }
+            
             domElements.aiReflectionLoader.classList.remove('hidden');
-            const prompt = `Provide a brief, supportive reflection on this journal entry from someone quitting alcohol: "${entry}"`;
-            const result = await callGeminiAPI(prompt);
+            const promptText = `Provide a brief, supportive reflection on this journal entry from someone quitting alcohol: "${entry}"`;
+            const result = await callGeminiAPI(promptText);
             domElements.aiReflectionLoader.classList.add('hidden');
+            
             if(result) {
                  domElements.aiReflectionOutput.innerHTML = `<p class="ai-title"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> AI Reflection</p><p>${result}</p>`;
                  domElements.aiReflectionOutput.classList.remove('hidden');
@@ -579,21 +701,25 @@
             createJuiceCards();
             
             if (useFirebase) {
-                // The onAuthStateChanged listener will handle the initial page view
-            } else {
-                // Preview Mode Setup
-                loadState(); // Use localStorage
-                if (appState.isLoggedIn) {
-                    showPage('dashboard');
-                    refreshDashboardUI();
-                } else {
-                    showPage('landing');
-                }
-                // Hide loader after initial setup
-                if(domElements.pageLoader) {
-                    domElements.pageLoader.style.opacity = '0';
-                    setTimeout(() => { domElements.pageLoader.style.display = 'none'; }, 300);
-                }
+                // Set up auth state listener
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        await loadUserData();
+                        showPage('dashboard');
+                        refreshDashboardUI();
+                    } else {
+                        currentUser = null;
+                        appState = {};
+                        showPage('landing');
+                    }
+                    
+                    // Hide loader after auth check
+                    if(domElements.pageLoader) {
+                        domElements.pageLoader.style.opacity = '0';
+                        setTimeout(() => { domElements.pageLoader.style.display = 'none'; }, 300);
+                    }
+                });
             }
             
             // --- Event Listeners ---
@@ -608,6 +734,14 @@
             domElements.getAIReflectionBtn.addEventListener('click', handleGetAIReflection);
             domElements.authModal.addEventListener('click', (e) => {
                 if(e.target && e.target.id === 'authToggleBtn') {
+                    toggleAuthMode(!isLoginMode);
+                }
+            });
+            
+            // Add event delegation for auth toggle button
+            document.addEventListener('click', (e) => {
+                if (e.target && e.target.id === 'authToggleBtn') {
+                    e.preventDefault();
                     toggleAuthMode(!isLoginMode);
                 }
             });
