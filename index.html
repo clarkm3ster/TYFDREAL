@@ -202,7 +202,6 @@
     <div id="notificationToast" style="display: none;"><span></span></div>
 
     <script type="module">
-        // Using localStorage for Preview Mode
         const useFirebase = false; // Set to true to switch to Firebase mode
 
         // --- Firebase SDK Imports (kept for easy switching) ---
@@ -233,8 +232,6 @@
             { day: 13, title: "Cancer Juice (Rewired)", content: `Take your Truth Pill. Wait one hour. Pour a drink. Look at it.\n\nYou're about to drink a known carcinogen while your brain learns there's nothing in it worth dying for.\n\nIn your hand:\n- Group 1 carcinogen\n- DNA damage in a glass\n- Cellular mutation catalyst\n- All risk, zero reward\n\nThanks to naltrexone:\n- No pleasure\n- No escape\n- No point\n- Just poison\n\nThe calculation is clear:\nRisk: Cancer\nReward: Nothing\n\nYour brain is learning what your cells always knew: This is poison without purpose.\n\nToday's assignment:\n- Say out loud: "This causes cancer"\n- Feel the emptiness\n- Choose life`, prompt: "How does it feel to drink Cancer Juice knowing there's no reward worth the risk?" },
             { day: 14, title: "What's Next?", content: `Take your Truth Pill. Wait one hour. Pour what might be your last drink for a while. Or forever. The choice is actually yours now.\n\nYou did it.\n\nIn 14 days, you've:\n- Faced the truth about alcohol\n- Rewired your brain's reward system\n- Discovered your MWAs\n- Taken back control\n\nNotice how alcohol feels now: Boring? Pointless? Empty?\nThat's not failure. That's freedom.\n\nYour options:\n1. Continue with naltrexone whenever you drink\n2. Stop drinking (many lose interest entirely)\n3. Keep naltrexone as insurance\n\nThe ONE RULE: Never drink without naltrexone again.\n\nYour MWAs are waiting:\n- Book that trip\n- Start that project\n- Heal that relationship\n- Build that dream\n\nYou're not giving up drinking. You're graduating to everything better.\n\nThank you for your courage.\nThank you for drinking your way to freedom.\nWelcome to your real life.`, prompt: "How has your relationship with alcohol changed? What MWA will you pursue first?" }
         ];
-
-        // --- All Functions (UI, State, Logic, AI) ---
 
         function initializeDomElements() {
             domElements = {
@@ -571,18 +568,22 @@
             initializeDomElements();
             createJuiceCards();
             
-            // --- Preview Mode Setup ---
-            loadState(); // Use localStorage
-            if (appState.isLoggedIn) {
-                showPage('dashboard');
-                refreshDashboardUI();
+            if (useFirebase) {
+                // The onAuthStateChanged listener will handle the initial page view
             } else {
-                showPage('landing');
-            }
-            // Hide loader after initial setup
-            if(domElements.pageLoader) {
-                domElements.pageLoader.style.opacity = '0';
-                setTimeout(() => { domElements.pageLoader.style.display = 'none'; }, 300);
+                // Preview Mode Setup
+                loadState(); // Use localStorage
+                if (appState.isLoggedIn) {
+                    showPage('dashboard');
+                    refreshDashboardUI();
+                } else {
+                    showPage('landing');
+                }
+                // Hide loader after initial setup
+                if(domElements.pageLoader) {
+                    domElements.pageLoader.style.opacity = '0';
+                    setTimeout(() => { domElements.pageLoader.style.display = 'none'; }, 300);
+                }
             }
             
             // --- Event Listeners ---
