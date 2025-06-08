@@ -206,12 +206,14 @@
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config)
-            : { apiKey: "DEMO_KEY", authDomain: "DEMO.firebaseapp.com", projectId: "DEMO-ID" };
-        if (firebaseConfig.apiKey === "DEMO_KEY") {
-             console.warn("Firebase config not found. Using placeholder values. Authentication will not work until you add your real config object.");
-        }
+const firebaseConfig = {
+  apiKey: "AIzaSyCETwEwxoWwp9pVVtFhwvFjNk6AAapY_Rw",
+  authDomain: "tyfd-real.firebaseapp.com",
+  projectId: "tyfd-real",
+  storageBucket: "tyfd-real.firebasestorage.app",
+  messagingSenderId: "90002542690",
+  appId: "1:90002542690:web:693616719ac68c72ac413b",
+  measurementId: "G-WEXXMYRVJM"
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
