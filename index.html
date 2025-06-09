@@ -202,38 +202,30 @@
     <div id="notificationToast" style="display: none;"><span></span></div>
 
     <script type="module">
-        const useFirebase = true; // Set to true to enable Firebase
+        // --- App Configuration ---
+        const useFirebase = false; // <<< SET TO 'false' FOR PREVIEW MODE, 'true' FOR LIVE DEPLOYMENT
 
         // --- Firebase SDK Imports ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+        
+        // --- Firebase Config Placeholder ---
         const firebaseConfig = {
-            apiKey: "AIzaSyCETwEwxoWwp9pVVtFhwvFjNk6AAapY_Rw",
-            authDomain: "tyfd-real.firebaseapp.com",
-            projectId: "tyfd-real",
-            storageBucket: "tyfd-real.firebasestorage.app",
-            messagingSenderId: "90002542690",
-            appId: "1:90002542690:web:693616719ac68c72ac413b",
-            measurementId: "G-WEXXMYRVJM"
+            // PASTE YOUR REAL FIREBASE CONFIG OBJECT HERE WHEN DEPLOYING
+            apiKey: "DEMO_KEY",
+            authDomain: "DEMO.firebaseapp.com",
+            projectId: "DEMO-ID"
         };
-
-        // Initialize Firebase
+        
+        // --- Global Variables ---
         let app, auth, db;
-        if (useFirebase) {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        }
-
-        // --- App State and Variables ---
         let appState = {};
         let domElements = {};
         let currentUser = null;
         let isLoginMode = false;
         
-        // --- Core Content ---
+        // --- Core Content Data ---
         const lessons = [
             { day: 1, title: "Welcome to the Movement", content: `Welcome to the course that changes how you drink — not by forcing you to stop, but by giving you something better.\n\nThree things to know:\n1. You will drink.\n   Not in Week 1 — but in Week 2, drinking becomes part of the protocol.\n2. You will acquire and use a Truth Pill.\n   That pill is called naltrexone — a safe, FDA-approved medication that changes how your brain responds to alcohol.\n3. You will dream better dreams.\n   Over the next 14 days, you'll build your list of MWAs: your Most Wonderful Alternatives — the life you'd rather be living than drinking.\n\nThis is not about abstinence. It's about alignment.\nNot about shame. But truth.\nYou are not the problem.\nBut alcohol might be.\n\nToday's assignment:\n- Schedule an appointment to get naltrexone\n- Start thinking about your MWAs\n- Commit to showing up for 14 days`, prompt: "What brought you here? What do you hope will be different in 14 days?" },
             { day: 2, title: "Fat Juice", content: `You are drinking Fat Juice.\n\nAlcohol is liquid calories — packed with sugar, stripped of nutrients. But more than that, it hijacks your metabolism.\n\nWhen alcohol enters your body, your liver works urgently to process it as a toxin — converting it to acetate, which gets stored as fat, particularly around your midsection and liver.\nAnd because your liver is busy clearing alcohol, it ignores carbs, protein, and actual food — turning them into stored fat as well.\n\nThe facts:\n- Alcohol = 7 calories per gram (nearly as dense as fat)\n- Inhibits mTOR pathway (needed for muscle recovery)\n- Raises cortisol and insulin (fat-storing hormones)\n\nYou are drinking Fat Juice. Alcohol is making you fat.\n\nToday's assignment:\n- Calculate your weekly alcohol calories\n- Notice where you feel alcohol's physical effects\n- Add physical MWAs to your list`, prompt: "How has alcohol affected your physical health and appearance?" },
@@ -250,6 +242,8 @@
             { day: 13, title: "Cancer Juice (Rewired)", content: `Take your Truth Pill. Wait one hour. Pour a drink. Look at it.\n\nYou're about to drink a known carcinogen while your brain learns there's nothing in it worth dying for.\n\nIn your hand:\n- Group 1 carcinogen\n- DNA damage in a glass\n- Cellular mutation catalyst\n- All risk, zero reward\n\nThanks to naltrexone:\n- No pleasure\n- No escape\n- No point\n- Just poison\n\nThe calculation is clear:\nRisk: Cancer\nReward: Nothing\n\nYour brain is learning what your cells always knew: This is poison without purpose.\n\nToday's assignment:\n- Say out loud: "This causes cancer"\n- Feel the emptiness\n- Choose life`, prompt: "How does it feel to drink Cancer Juice knowing there's no reward worth the risk?" },
             { day: 14, title: "What's Next?", content: `Take your Truth Pill. Wait one hour. Pour what might be your last drink for a while. Or forever. The choice is actually yours now.\n\nYou did it.\n\nIn 14 days, you've:\n- Faced the truth about alcohol\n- Rewired your brain's reward system\n- Discovered your MWAs\n- Taken back control\n\nNotice how alcohol feels now: Boring? Pointless? Empty?\nThat's not failure. That's freedom.\n\nYour options:\n1. Continue with naltrexone whenever you drink\n2. Stop drinking (many lose interest entirely)\n3. Keep naltrexone as insurance\n\nThe ONE RULE: Never drink without naltrexone again.\n\nYour MWAs are waiting:\n- Book that trip\n- Start that project\n- Heal that relationship\n- Build that dream\n\nYou're not giving up drinking. You're graduating to everything better.\n\nThank you for your courage.\nThank you for drinking your way to freedom.\nWelcome to your real life.`, prompt: "How has your relationship with alcohol changed? What MWA will you pursue first?" }
         ];
+
+        // --- All Functions (UI, State, Logic, AI) ---
 
         function initializeDomElements() {
             domElements = {
@@ -421,116 +415,40 @@
             displayMWAsUI();
         }
 
-        // Firebase-specific functions
-        async function loadUserData() {
-            if (!currentUser || !useFirebase) return;
+        async function loadStateFromFirestore() {
+            if (!currentUser) return;
+            const userDocRef = doc(db, "users", currentUser.uid);
             try {
-                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    appState = {
-                        currentDay: userData.currentDay || 1,
-                        completedDays: userData.completedDays || [],
-                        journalEntries: userData.journalEntries || {},
-                        mwas: userData.mwas || [],
-                        isLoggedIn: true
-                    };
+                const docSnap = await getDoc(userDocRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    appState = { ...appState, ...data, isLoggedIn: true, completedDays: data.completedDays || [], mwas: data.mwas || [], journalEntries: data.journalEntries || {} };
+                    await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
                 } else {
-                    // New user - create initial document
-                    appState = {
-                        currentDay: 1,
-                        completedDays: [],
-                        journalEntries: {},
-                        mwas: [],
-                        isLoggedIn: true
+                    const defaultState = {
+                        email: currentUser.email, createdAt: serverTimestamp(), lastLogin: serverTimestamp(),
+                        hasPaid: true, currentDay: 1, completedDays: [], journalEntries: {}, mwas: []
                     };
-                    await setDoc(doc(db, 'users', currentUser.uid), {
-                        ...appState,
-                        createdAt: serverTimestamp(),
-                        email: currentUser.email
-                    });
+                    await setDoc(userDocRef, defaultState);
+                    appState = { ...appState, ...defaultState, isLoggedIn: true };
                 }
             } catch (error) {
-                console.error('Error loading user data:', error);
-                showNotification('Error loading data. Please refresh.', 'error');
+                console.error("Error loading state:", error);
+                showNotification("Failed to load your progress.", "error");
             }
         }
 
-        async function saveUserData() {
-            if (!currentUser || !useFirebase) return;
-            try {
-                await updateDoc(doc(db, 'users', currentUser.uid), {
-                    currentDay: appState.currentDay,
-                    completedDays: appState.completedDays,
-                    journalEntries: appState.journalEntries,
-                    mwas: appState.mwas,
-                    lastUpdated: serverTimestamp()
-                });
-            } catch (error) {
-                console.error('Error saving user data:', error);
-                showNotification('Error saving data. Please try again.', 'error');
+        function loadStateFromLocalStorage() {
+            const savedState = localStorage.getItem('tyfdProgramState_preview');
+            if (savedState) {
+                appState = JSON.parse(savedState);
+            } else {
+                appState = { isLoggedIn: false, currentDay: 0, completedDays: [], journalEntries: {}, mwas: [] };
             }
         }
-
-        async function handleAuthSubmit() {
-            const email = domElements.emailInput.value.trim();
-            const password = domElements.passwordInput.value;
-            
-            if (!email || !password) {
-                domElements.authError.textContent = 'Please fill in all fields.';
-                return;
-            }
-            
-            if (password.length < 6) {
-                domElements.authError.textContent = 'Password must be at least 6 characters.';
-                return;
-            }
-            
-            domElements.authSubmitBtn.disabled = true;
-            domElements.authError.textContent = '';
-            
-            try {
-                if (isLoginMode) {
-                    await signInWithEmailAndPassword(auth, email, password);
-                } else {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                }
-                closeAuthModal();
-            } catch (error) {
-                console.error('Auth error:', error);
-                switch(error.code) {
-                    case 'auth/email-already-in-use':
-                        domElements.authError.textContent = 'This email is already registered. Please log in.';
-                        break;
-                    case 'auth/invalid-email':
-                        domElements.authError.textContent = 'Please enter a valid email address.';
-                        break;
-                    case 'auth/user-not-found':
-                        domElements.authError.textContent = 'No account found with this email.';
-                        break;
-                    case 'auth/wrong-password':
-                        domElements.authError.textContent = 'Incorrect password. Please try again.';
-                        break;
-                    case 'auth/invalid-credential':
-                        domElements.authError.textContent = 'Invalid email or password.';
-                        break;
-                    default:
-                        domElements.authError.textContent = 'An error occurred. Please try again.';
-                }
-            } finally {
-                domElements.authSubmitBtn.disabled = false;
-            }
-        }
-
-        async function handleSignOut() {
-            try {
-                await signOut(auth);
-                appState = {};
-                showNotification('Signed out successfully', 'success');
-            } catch (error) {
-                console.error('Sign out error:', error);
-                showNotification('Error signing out', 'error');
-            }
+        
+        function saveStateToLocalStorage() {
+            localStorage.setItem('tyfdProgramState_preview', JSON.stringify(appState));
         }
 
         function toggleAuthMode(showLogin) {
@@ -559,75 +477,103 @@
         function closeAuthModal() {
             domElements.authModal.classList.remove('open');
             setTimeout(() => {
-                domElements.authModal.classList.add('hidden');
                 domElements.authModal.classList.add('opacity-0');
-            }, 400);
+                setTimeout(() => domElements.authModal.classList.add('hidden'), 50);
+            }, 300);
+        }
+        
+        function handleAuthSubmit() {
+             if (useFirebase) {
+                 const email = domElements.emailInput.value;
+                const password = domElements.passwordInput.value;
+                domElements.authError.textContent = "";
+
+                if (!email || password.length < 6) {
+                    domElements.authError.textContent = "Please enter a valid email and a password of at least 6 characters.";
+                    return;
+                }
+                const authPromise = isLoginMode
+                    ? signInWithEmailAndPassword(auth, email, password)
+                    : createUserWithEmailAndPassword(auth, email, password);
+                
+                authPromise.then(userCredential => {
+                    closeAuthModal();
+                }).catch(error => {
+                    domElements.authError.textContent = error.message;
+                });
+            } else {
+                // Preview Mode Logic
+                appState.isLoggedIn = true;
+                appState.currentDay = appState.currentDay || 1;
+                saveStateToLocalStorage();
+                closeAuthModal();
+                showPage('dashboard');
+                refreshDashboardUI();
+            }
+        }
+        
+        async function handleSignOut() {
+            if(useFirebase) {
+                await signOut(auth);
+            } else {
+                appState = { isLoggedIn: false, currentDay: 0, completedDays: [], journalEntries: {}, mwas: [] };
+                saveStateToLocalStorage();
+                showPage('landing');
+            }
+        }
+        
+        async function saveState() {
+            if (useFirebase) {
+                await saveStateToFirestore();
+            } else {
+                saveStateToLocalStorage();
+            }
         }
         
         async function handleCompleteDay(day) {
             if (!appState.completedDays.includes(day) && day === appState.currentDay) {
                 appState.completedDays.push(day);
                 if (appState.currentDay < lessons.length) appState.currentDay++;
-                await saveUserData();
+                await saveState();
                 refreshDashboardUI();
                 showNotification(`Day ${day} completed!`, 'success');
             }
         }
-
         async function handleSaveJournal() {
             const entry = domElements.journalEntryTextarea.value;
             const dayKey = domElements.journalEntryTextarea.getAttribute('data-day');
             if (dayKey) {
                 if(!appState.journalEntries) appState.journalEntries = {};
                 appState.journalEntries[dayKey] = entry;
-                await saveUserData();
+                await saveState();
                 showNotification('Journal entry saved!', 'success');
             }
         }
-
         async function handleAddMWA() {
             const mwaText = domElements.mwaInput.value.trim();
             if(mwaText){
                 if(!appState.mwas) appState.mwas = [];
                 appState.mwas.push(mwaText);
-                await saveUserData();
+                await saveState();
                 displayMWAsUI();
                 domElements.mwaInput.value = '';
-                showNotification('MWA added!', 'success');
             }
         }
-
         async function handleRemoveMWA(index) {
             appState.mwas.splice(index, 1);
-            await saveUserData();
+            await saveState();
             displayMWAsUI();
-            showNotification('MWA removed', 'info');
         }
 
         async function callGeminiAPI(promptText) {
             showNotification("Connecting to AI...", "info", 2000);
-            
-            // Get API key from environment variable (for Vercel deployment)
-            const API_KEY = process.env.GEMINI_API_KEY || '';
-            
-            if (!API_KEY) {
-                showNotification("AI features require API key configuration", "error");
-                return null;
-            }
-            
+            const API_KEY = ""; // Kept blank for Canvas environment
             const GENERATIVE_MODEL_TEXT = "gemini-2.0-flash";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GENERATIVE_MODEL_TEXT}:generateContent?key=${API_KEY}`;
             const payload = { contents: [{ role: "user", parts: [{ text: promptText }] }] };
-            
             try {
-                const response = await fetch(apiUrl, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(payload) 
-                });
-                
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
-                
                 const result = await response.json();
                 if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
                     return result.candidates[0].content.parts[0].text;
@@ -642,12 +588,10 @@
         async function handleBrainstormMWAs() {
             const keywords = prompt("Enter interests for brainstorming (e.g., 'creative, outdoors'):");
             if (!keywords) return;
-            
             domElements.mwaBrainstormLoader.classList.remove('hidden');
-            const promptText = `Suggest 5 'Most Wonderful Alternatives' to drinking based on these interests: ${keywords}. Format as a simple bullet list.`;
-            const result = await callGeminiAPI(promptText);
+            const prompt = `Suggest 5 'Most Wonderful Alternatives' to drinking based on these interests: ${keywords}. Format as a simple bullet list.`;
+            const result = await callGeminiAPI(prompt);
             domElements.mwaBrainstormLoader.classList.add('hidden');
-            
             if(result) {
                 domElements.mwaBrainstormOutput.innerHTML = `<p class="ai-title"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> AI MWA Ideas</p><ul>` +
                 result.split('- ').filter(r => r.trim()).map(r => `<li>${r.trim()}</li>`).join('') + `</ul>`;
@@ -657,16 +601,11 @@
 
         async function handleGetAIReflection() {
             const entry = domElements.journalEntryTextarea.value;
-            if (!entry) { 
-                showNotification('Please write in your journal first.', 'info'); 
-                return; 
-            }
-            
+            if (!entry) { showNotification('Please write in your journal first.', 'info'); return; }
             domElements.aiReflectionLoader.classList.remove('hidden');
-            const promptText = `Provide a brief, supportive reflection on this journal entry from someone quitting alcohol: "${entry}"`;
-            const result = await callGeminiAPI(promptText);
+            const prompt = `Provide a brief, supportive reflection on this journal entry from someone quitting alcohol: "${entry}"`;
+            const result = await callGeminiAPI(prompt);
             domElements.aiReflectionLoader.classList.add('hidden');
-            
             if(result) {
                  domElements.aiReflectionOutput.innerHTML = `<p class="ai-title"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> AI Reflection</p><p>${result}</p>`;
                  domElements.aiReflectionOutput.classList.remove('hidden');
@@ -683,6 +622,7 @@
             ];
 
             const container = domElements.juiceCardsContainer;
+            if(!container) return;
             container.innerHTML = '';
             juiceData.forEach((juice, index) => {
                 const card = document.createElement('div');
@@ -701,25 +641,39 @@
             createJuiceCards();
             
             if (useFirebase) {
-                // Set up auth state listener
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         currentUser = user;
-                        await loadUserData();
-                        showPage('dashboard');
-                        refreshDashboardUI();
+                        await loadStateFromFirestore();
+                        if (appState.hasPaid) {
+                            showPage('dashboard');
+                            refreshDashboardUI();
+                        } else {
+                            showPage('landing');
+                            showNotification("Payment required to access the program.", "info");
+                        }
                     } else {
                         currentUser = null;
-                        appState = {};
+                        appState = { isLoggedIn: false };
                         showPage('landing');
                     }
-                    
-                    // Hide loader after auth check
                     if(domElements.pageLoader) {
                         domElements.pageLoader.style.opacity = '0';
                         setTimeout(() => { domElements.pageLoader.style.display = 'none'; }, 300);
                     }
                 });
+            } else {
+                loadStateFromLocalStorage();
+                if (appState.isLoggedIn) {
+                    showPage('dashboard');
+                    refreshDashboardUI();
+                } else {
+                    showPage('landing');
+                }
+                if(domElements.pageLoader) {
+                    domElements.pageLoader.style.opacity = '0';
+                    setTimeout(() => { domElements.pageLoader.style.display = 'none'; }, 300);
+                }
             }
             
             // --- Event Listeners ---
@@ -734,14 +688,6 @@
             domElements.getAIReflectionBtn.addEventListener('click', handleGetAIReflection);
             domElements.authModal.addEventListener('click', (e) => {
                 if(e.target && e.target.id === 'authToggleBtn') {
-                    toggleAuthMode(!isLoginMode);
-                }
-            });
-            
-            // Add event delegation for auth toggle button
-            document.addEventListener('click', (e) => {
-                if (e.target && e.target.id === 'authToggleBtn') {
-                    e.preventDefault();
                     toggleAuthMode(!isLoginMode);
                 }
             });
