@@ -701,6 +701,22 @@
         }
 
         document.addEventListener('DOMContentLoaded', main);
+        async function saveStateToFirestore() {
+    if (!currentUser) return;
+    const userDocRef = doc(db, "users", currentUser.uid);
+    try {
+        await updateDoc(userDocRef, {
+            currentDay: appState.currentDay,
+            completedDays: appState.completedDays,
+            journalEntries: appState.journalEntries,
+            mwas: appState.mwas,
+            lastUpdated: serverTimestamp()
+        });
+    } catch (error) {
+        console.error("Error saving state:", error);
+        showNotification("Failed to save progress.", "error");
+    }
+}
     </script>
 </body>
 </html>
